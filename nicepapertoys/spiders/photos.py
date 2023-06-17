@@ -1,4 +1,6 @@
 
+import re
+
 from dateutil import parser
 import scrapy
 
@@ -37,10 +39,14 @@ class PhotosSpider(scrapy.Spider):
         image = {k: response.meta.get(k) for k in image_xp.keys()}
 
         image['url'] = response.url.split('?')[0]
-        
-        image['added'] = parser.parse(response.css('ul.byline>li').xpath(
-            'a[last()]/text()').extract_first()).isoformat()
-        
+
+        try:
+            image['added'] = parser.parse(response.css('ul.byline>li').xpath(
+                'a[last()]/text()').extract_first()).isoformat()
+        except:
+            raw_ts = response.css('ul.byline>li').xpath('a[last()]/text()').extract_first()
+            image['added'] = parser.parse(' '.join(re.split('on|at', raw_ts)[-2:])).isoformat()
+
         image['image_urls'] = response.css('a.xg_sprite-view-fullsize').xpath(
             '@href').extract()
         

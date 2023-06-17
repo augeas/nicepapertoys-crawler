@@ -1,4 +1,6 @@
 
+import re
+
 from dateutil import parser
 import scrapy
 
@@ -39,8 +41,12 @@ class BlogsSpider(scrapy.Spider):
             
         blog['url'] = response.url.split('?')[0]
             
-        blog['added'] = parser.parse(response.css('ul.byline>li').xpath(
-            'a[last()]/text()').extract_first()).isoformat()
+        try:
+            blog['added'] = parser.parse(response.css('ul.byline>li').xpath(
+                'a[last()]/text()').extract_first()).isoformat()
+        except:
+            raw_ts = response.css('ul.byline>li').xpath('a[last()]/text()').extract_first()
+            blog['added'] = parser.parse(' '.join(re.split('on|at', raw_ts)[-2:])).isoformat()
             
         body = response.css('div.postbody')
             

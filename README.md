@@ -38,7 +38,7 @@ will dump the details of *all* the photos in JSON format in `photos.json`.
 
 ```
 scrapy crawl blogs -o blogs.json
-
+```
 ## Images
 
 By default, images will end up in:
