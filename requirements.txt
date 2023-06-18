@@ -1,3 +1,4 @@
 Pillow
+pandas
 python-dateutil
 scrapy
