@@ -1,4 +1,5 @@
 
+from datetime import datetime
 import re
 
 from dateutil import parser
@@ -36,9 +37,12 @@ class PhotosSpider(scrapy.Spider):
             )
 
     def parse_image(self, response):
+        right_now = datetime.now().isoformat()
         image = {k: response.meta.get(k) for k in image_xp.keys()}
 
         image['url'] = response.url.split('?')[0]
+
+        image['retrieved'] = right_now
 
         try:
             image['added'] = parser.parse(response.css('ul.byline>li').xpath(
@@ -54,6 +58,18 @@ class PhotosSpider(scrapy.Spider):
         
         image['text'] = ''.join(body.xpath(
             'descendant::*/text()').extract()).strip()
+
+        try:
+            image['views'] = int(response.css('span.view-count').xpath(
+                'text()').extract_first())
+        except:
+            image['views'] = None
+            
+        try:
+            image['rating'] = int(response.css('ul.star-rater').xpath(
+                '@_rating').extract_first())
+        except:
+            image['rating'] = 0
 
         anchors = filter(lambda a: a.xpath('text()').extract(),
             body.xpath('descendant::a'))
@@ -72,7 +88,7 @@ class PhotosSpider(scrapy.Spider):
             for c in  comments.xpath('dt')
         ]
             
-        image['comments'] = [dict(zip(('author', 'author_id', 'text', 'added'),
+        image['comments'] = [dict(zip(('profile_name', 'profile_id', 'text', 'added'),
             com)) for com in zip(comment_authors, comment_author_ids,
             comment_text, timestamps)
         ]

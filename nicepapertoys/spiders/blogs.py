@@ -1,4 +1,5 @@
 
+from datetime import datetime
 import re
 
 from dateutil import parser
@@ -37,8 +38,9 @@ class BlogsSpider(scrapy.Spider):
             )
             
     def parse_blog(self, response):
+        right_now = datetime.now().isoformat()
         blog = {k: response.meta.get(k) for k in blog_xp.keys()}
-            
+        blog['retrieved'] = right_now    
         blog['url'] = response.url.split('?')[0]
             
         try:
@@ -54,6 +56,12 @@ class BlogsSpider(scrapy.Spider):
             'descendant::*/text()').extract()).strip()
             
         blog['image_urls'] = body.xpath('descendant::img/@src').extract()
+        
+        try:
+            blog['views'] = int(response.css('span.view-count').xpath(
+                'text()').extract_first())
+        except:
+            blog['views'] = None
             
         anchors = filter(lambda a: a.xpath('text()').extract(), body.xpath('descendant::a'))
         blog['links'] = {a.xpath('text()').extract_first(): a.xpath('@href').extract_first()
@@ -70,7 +78,7 @@ class BlogsSpider(scrapy.Spider):
             for c in  comments.xpath('dt')
         ]
             
-        blog['comments'] = [dict(zip(('author', 'author_id', 'text', 'added'),
+        blog['comments'] = [dict(zip(('profile_name', 'profile_id', 'text', 'added'),
             com)) for com in zip(comment_authors, comment_author_ids,
             comment_text, timestamps)
         ]

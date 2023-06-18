@@ -1,4 +1,5 @@
 
+from datetime import datetime
 import re
 
 from dateutil import parser
@@ -30,6 +31,7 @@ class MembersSpider(scrapy.Spider):
         profile_keys = [k.split(':')[0] for k in about_user.xpath('dl/descendant::dt/text()').extract()]
         
         profile = {
+            'retrieved': datetime.now().isoformat(),
             'profile_id': response.url.split('/')[-1].split('?')[0],
             'profile_name': response.css('div.profile>dl>dt>span.fn').xpath(
                 'text()').extract_first(),
