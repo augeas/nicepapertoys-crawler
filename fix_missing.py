@@ -24,7 +24,7 @@ def get_image(url):
         return ''
     
     try:
-        im = Image.open(BytesIO(req.content))
+        im = Image.open(BytesIO(req.content)).convert('RGB')
     except:
         return ''
         
