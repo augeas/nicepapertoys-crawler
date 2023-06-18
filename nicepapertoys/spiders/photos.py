@@ -40,6 +40,7 @@ class PhotosSpider(scrapy.Spider):
         right_now = datetime.now().isoformat()
         image = {k: response.meta.get(k) for k in image_xp.keys()}
 
+        image['title'] = response.css('div.tb').xpath('h1/text()').extract_first()
         image['url'] = response.url.split('?')[0]
 
         image['retrieved'] = right_now
